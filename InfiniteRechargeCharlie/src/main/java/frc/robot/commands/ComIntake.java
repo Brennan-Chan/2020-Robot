@@ -7,15 +7,15 @@
 
 package frc.robot.commands;
 
-import frc.robot.Robot;
-import frc.robot.OI;
-import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.command.Command;
 
-import com.ctre.phoenix.motorcontrol.ControlMode;
-public class Drive extends Command {
-  public Drive() {
-    requires(Robot.dt);
+import frc.robot.Robot;
+import frc.robot.OI;
+
+public class ComIntake extends Command {
+  boolean s_isFinished;
+  public ComIntake() {
+    requires(Robot.In);
   }
 
   // Called just before this Command runs the first time
@@ -23,11 +23,10 @@ public class Drive extends Command {
   protected void initialize() {
   }
 
-  // Called repeatedly when this Command is scheduled to run
+  
   @Override
   protected void execute() {
-    Robot.dt.ArcadeDrive(OI.driver.getRawAxis(OI.leftY), OI.driver.getRawAxis(OI.rightX));
-    Timer.delay(0.005);
+    Robot.In.setPower(OI.leftTrigger);
   }
 
   // Make this return true when this Command no longer needs to run execute()
@@ -39,11 +38,13 @@ public class Drive extends Command {
   // Called once after isFinished returns true
   @Override
   protected void end() {
+    Robot.In.setPower(0.0);
   }
 
   // Called when another command which requires one or more of the same
   // subsystems is scheduled to run
   @Override
   protected void interrupted() {
+    Robot.In.setPower(0.0);
   }
 }

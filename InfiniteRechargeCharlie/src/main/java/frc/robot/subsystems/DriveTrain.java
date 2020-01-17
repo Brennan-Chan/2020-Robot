@@ -25,6 +25,7 @@ public class DriveTrain extends Subsystem {
   public DifferentialDrive dd = new DifferentialDrive(Left1, Right1);
 
   public DriveTrain(){
+    dd.setSafetyEnabled(false);
     Left1.setInverted(false);
     Left2.setInverted(false);
   
@@ -37,7 +38,6 @@ public class DriveTrain extends Subsystem {
   }
   @Override
   public void initDefaultCommand() {
-    // Set the default command for a subsystem here.
-    // setDefaultCommand(new MySpecialCommand());
+    setDefaultCommand(new Drive());
   }
 }

@@ -13,6 +13,8 @@ import frc.robot.Constants;
 
 public class Shooting extends Command {
   double velo;
+  double kAngleVelocity;
+
   boolean m_isFinished;
   
   public Shooting() {
@@ -29,11 +31,14 @@ public class Shooting extends Command {
   // Called repeatedly when this Command is scheduled to run
   @Override
   protected void execute() {
+    //fix the sin()'s they need to be in radians and not degrees 
     double velo = (Constants.kHorisontalDistance + Constants.kGoalWallDist + Robot.lm.distanceToTarget())
     /(Math.sqrt((2/Constants.kGravity)*(Constants.kWallHeight-Constants.kBallHeight-((Math.sin(69)*(Constants.kHorisontalDistance + Constants.kGoalWallDist + Robot.lm.distanceToTarget()))/Math.cos(69))))*Math.cos(69));
   
+    double kAngleVelocity = (velo)/(0.0508*Math.PI);
+
     if(Robot.lm.validTarget()){
-      Robot.st.setShootSpeed(velo);
+      Robot.st.setShootSpeed(kAngleVelocity);
       System.out.println(velo);
     }
   }
@@ -51,6 +56,8 @@ public class Shooting extends Command {
   // Called once after isFinished returns true
   @Override
   protected void end() {
+    double velo = 0.0;
+    double kAngleVelocity = 0.0;
   }
 
   // Called when another command which requires one or more of the same

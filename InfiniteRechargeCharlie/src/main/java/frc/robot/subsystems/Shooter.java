@@ -17,7 +17,7 @@ import com.ctre.phoenix.motorcontrol.NeutralMode;
 import com.ctre.phoenix.motorcontrol.can.*;
 
 public class Shooter extends Subsystem {
-  public WPI_TalonSRX Shooter = new WPI_TalonSRX(RobotMap.Intake);
+  public WPI_TalonSRX Shooter = new WPI_TalonSRX(RobotMap.shoot);
   private double velo = 0.0;
   
   public Shooter(){

@@ -12,10 +12,10 @@ package frc.robot;
  */
 public class Constants {
 
-    public static final double kBallHeight = 0.5; 
-    public static final double kHorisontalDistance = .2;
-    public static final double kGoalWallDist = 0.0254;
-    public static final double kWallHeight = 2.4892;
-    public static final double kShooterAngle = 69;
-    public static final double kGravity = 9.81;
+    public static final double kBallHeight = 0.5; //meters (change to final value when robot gets built )
+    public static final double kHorisontalDistance = .2; //meters ^^
+    public static final double kGoalWallDist = 0.0254; //meters 
+    public static final double kWallHeight = 2.4892; //meters 
+    public static final double kShooterAngle = 69; //radians 
+    public static final double kGravity = 9.81; //meters per second
 }

@@ -7,31 +7,28 @@
 
 package frc.robot;
 
+import com.revrobotics.ColorMatchResult;
+
 import edu.wpi.first.wpilibj.TimedRobot;
 import edu.wpi.first.wpilibj.command.Command;
 import edu.wpi.first.wpilibj.command.Scheduler;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
-import frc.robot.commands.ExampleCommand;
+import edu.wpi.first.wpilibj.util.Color;
 import frc.robot.subsystems.Shooter;
 import frc.robot.subsystems.DriveTrain;
-import frc.robot.subsystems.ExampleSubsystem;
 import frc.robot.subsystems.Limelight;
+import frc.robot.subsystems.Intake;
+import frc.robot.subsystems.SubColorSensor;
+import frc.robot.commands.*;
 
-/**
- * The VM is configured to automatically run this class, and to call the
- * functions corresponding to each mode, as described in the TimedRobot
- * documentation. If you change the name of this class or the package after
- * creating this project, you must also update the build.gradle file in the
- * project.
- */
 public class Robot extends TimedRobot {
-  public static ExampleSubsystem m_subsystem = new ExampleSubsystem();
   public static OI m_oi;
   public static Shooter st = new Shooter();
+  public static Intake In = new Intake();
   public static Limelight lm = new Limelight();
   public static DriveTrain dt = new DriveTrain();
-
+  public static SubColorSensor cs = new SubColorSensor();
   Command m_autonomousCommand;
   SendableChooser<Command> m_chooser = new SendableChooser<>();
 
@@ -42,21 +39,38 @@ public class Robot extends TimedRobot {
   @Override
   public void robotInit() {
     m_oi = new OI();
-    m_chooser.setDefaultOption("Default Auto", new ExampleCommand());
+    //m_chooser.setDefaultOption("Default Auto", new ExampleCommand());
     // chooser.addOption("My Auto", new MyAutoCommand());
-    SmartDashboard.putData("Auto mode", m_chooser);
+    Robot.cs.m_colorMatcher.addColorMatch(Robot.cs.kBlueTarget);
+    Robot.cs.m_colorMatcher.addColorMatch(Robot.cs.kGreenTarget);
+    Robot.cs.m_colorMatcher.addColorMatch(Robot.cs.kRedTarget);
+    Robot.cs.m_colorMatcher.addColorMatch(Robot.cs.kYellowTarget);
+    System.out.println("Activating Robot");
   }
 
-  /**
-   * This function is called every robot packet, no matter the mode. Use
-   * this for items like diagnostics that you want ran during disabled,
-   * autonomous, teleoperated and test.
-   *
-   * <p>This runs after the mode specific periodic functions, but before
-   * LiveWindow and SmartDashboard integrated updating.
-   */
   @Override
   public void robotPeriodic() {
+    Color detectedColor = Robot.cs.m_colorSensor.getColor();
+    String colorString;
+    ColorMatchResult match = Robot.cs.m_colorMatcher.matchClosestColor(detectedColor);
+
+    if (match.color == Robot.cs.kBlueTarget) {
+      colorString = "Blue";
+    } else if (match.color == Robot.cs.kRedTarget) {
+      colorString = "Red";
+    } else if (match.color == Robot.cs.kGreenTarget) {
+      colorString = "Green";
+    } else if (match.color == Robot.cs.kYellowTarget) {
+      colorString = "Yellow";
+    } else {
+      colorString = "Unknown";
+    }
+    SmartDashboard.putNumber("Red", detectedColor.red);
+    SmartDashboard.putNumber("Green", detectedColor.green);
+    SmartDashboard.putNumber("Blue", detectedColor.blue);
+    SmartDashboard.putNumber("Confidence", match.confidence);
+    SmartDashboard.putString("Detected Color", colorString);
+    SmartDashboard.putData("Auto mode", m_chooser);
   }
 
   /**
@@ -66,6 +80,7 @@ public class Robot extends TimedRobot {
    */
   @Override
   public void disabledInit() {
+    System.out.println("The Robot Has Stopped");
   }
 
   @Override
@@ -73,17 +88,7 @@ public class Robot extends TimedRobot {
     Scheduler.getInstance().run();
   }
 
-  /**
-   * This autonomous (along with the chooser code above) shows how to select
-   * between different autonomous modes using the dashboard. The sendable
-   * chooser code works with the Java SmartDashboard. If you prefer the
-   * LabVIEW Dashboard, remove all of the chooser code and uncomment the
-   * getString code to get the auto name from the text box below the Gyro
-   *
-   * <p>You can add additional auto modes by adding additional commands to the
-   * chooser code above (like the commented example) or additional comparisons
-   * to the switch structure below with additional strings & commands.
-   */
+
   @Override
   public void autonomousInit() {
     m_autonomousCommand = m_chooser.getSelected();
@@ -111,10 +116,7 @@ public class Robot extends TimedRobot {
 
   @Override
   public void teleopInit() {
-    // This makes sure that the autonomous stops running when
-    // teleop starts running. If you want the autonomous to
-    // continue until interrupted by another command, remove
-    // this line or comment it out.
+    
     if (m_autonomousCommand != null) {
       m_autonomousCommand.cancel();
     }

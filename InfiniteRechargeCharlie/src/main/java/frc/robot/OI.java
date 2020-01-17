@@ -72,11 +72,9 @@ public class OI {
 	public static int rightX = 4;
 	public static int rightY = 5;
 	public static int leftTrigger = 2;
-  	public static int rightTrigger = 3;
+  public static int rightTrigger = 3;
 	  
   public OI(){
-	
-	
 
 	
   }	

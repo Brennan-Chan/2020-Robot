@@ -15,7 +15,7 @@ import com.ctre.phoenix.motorcontrol.can.*;
 public class Intake extends Subsystem {
   
   //public WPI_TalonFX feeder = new WPI_TalonFX(RobotMap.Intake);
-  public WPI_TalonSRX feeder = new WPI_TalonSRX(RobotMap.Intake);
+  public WPI_TalonSRX feeder = new WPI_TalonSRX(RobotMap.Intake1);
 
   public Intake(){
 
