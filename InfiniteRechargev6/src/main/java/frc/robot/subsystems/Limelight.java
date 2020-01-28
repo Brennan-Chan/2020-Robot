@@ -6,16 +6,18 @@
 /*----------------------------------------------------------------------------*/
 
 package frc.robot.subsystems;
-import edu.wpi.first.wpilibj.command.Subsystem;
+//import edu.wpi.first.wpilibj.command.subsystem;
 
 import edu.wpi.first.networktables.NetworkTable;
 import edu.wpi.first.networktables.NetworkTableEntry;
 import edu.wpi.first.networktables.NetworkTableInstance;
-
+import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Config;
+import frc.robot.Constants;
+
 import java.lang.Math;
 
-public class Limelight extends Subsystem {
+public class Limelight extends SubsystemBase {
   //Instance NetworkTable to obtain realtime data from the Limelight
   public NetworkTable ll = NetworkTableInstance.getDefault().getTable("limelight");
 
@@ -87,13 +89,17 @@ public class Limelight extends Subsystem {
   }
 
   public double distanceToTarget(){
-    //TODO: Configure for multiple targets; Method currently finds distance for hatch panel targets in frame
     System.out.println(Math.tan(Config.mountAngle+offsetAngle)/(Config.hpHeight-Config.cameraHeight));
     return Math.tan(Config.mountAngle+offsetAngle)/(Config.hpHeight-Config.cameraHeight);
   }
 
-  @Override
-  public void initDefaultCommand(){
-    setDefaultCommand(null);
+  public double OptimalVelocity(){
+    return (Constants.kHorisontalDistance + Constants.kGoalWallDist + distanceToTarget())
+    /(Math.sqrt((2/Constants.kGravity)*(Constants.kWallHeight-Constants.kBallHeight-((Math.sin(69)*(Constants.kHorisontalDistance + Constants.kGoalWallDist + distanceToTarget()))/Math.cos(69))))*Math.cos(69));
   }
+  
+  public double OptimalAngularVelocity(){
+    return (OptimalVelocity())/(0.0508*Math.PI);
+  }
+
 }

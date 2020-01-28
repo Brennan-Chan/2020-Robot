@@ -1,11 +1,8 @@
 package frc.robot;
 
 public class Config {
-    //Power
-    public static final double beltPower = 0.6;
-    public static final double feederIntakePower = 0.7;
-    public static final double feederExhaustPower = 0.7;
-    //Limelight
+
+    //Limelight Variables 
     public static final double Kp = 0.007;
     public static final double mountAngle = 25.0;
 
@@ -19,6 +16,28 @@ public class Config {
     public static final int kTimeoutMs = 30;
     public static boolean kSensorPhase = true;
     public static boolean kMotorInvert = false;
+
+    //set the arrays 4 distance 
+    public static Double[] karrayDistance = {
+
+    }; 
+
+    //set the arrays 4 velocity
+    public static Double[] karrayVelocity = {
+        10.2, //0
+        298.2, //1
+        120.3,  //...
+    };
+
+    //set the arrays 4 angles 
+    public static Double[] karrayAngles = {
+
+    };
+
+    //set the arrays 4 the launch heights  
+    public static Double[] karrayLaunchHeight = {
+
+    };
    
     //static final Gains kGains = new Gains(0.15, 0.0, 1, 0, 0, 1);
 
