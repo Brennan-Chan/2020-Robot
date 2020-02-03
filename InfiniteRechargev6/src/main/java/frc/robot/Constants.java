@@ -19,6 +19,7 @@ import edu.wpi.first.wpilibj.util.Units;
  */
 public final class Constants {
 
+
     //Drive Train Kinematics
 
     public static double trackWidthMeters = 0.77;//In meters
@@ -65,12 +66,20 @@ public final class Constants {
     //shooter constants
     public static double tickPerRev = 1024;
 
-    //hood contants 
-    public static double cyclesPerRev = 360;
-    public static double axilDiameter = 1;
+    
 
     //difine distance table 
     public TableElement[] tableElementArray = new TableElement[10];
 
-    
+    //gains
+    //TODO: fix your gains using the configuring device
+    static final Gains K_Gains = new Gains(.002, 0, 0, .2, 0, .6);
+
+    public static final class HoodAngleConstants{
+        //hood contants 
+        public static double ticksPerRev = 4096;
+        public static double axilDiameter = 1;
+
+        public static final double kHoodAnlgeperPulse = ((Math.PI*axilDiameter)/ticksPerRev);
+    }
 }

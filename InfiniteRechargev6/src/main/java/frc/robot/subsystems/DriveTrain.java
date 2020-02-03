@@ -8,18 +8,14 @@
 package frc.robot.subsystems;
 
 import com.ctre.phoenix.motorcontrol.can.WPI_TalonFX;
-import com.ctre.phoenix.sensors.PigeonIMU;
 import com.ctre.phoenix.motorcontrol.ControlMode;
 import com.ctre.phoenix.motorcontrol.FeedbackDevice;
 import com.ctre.phoenix.motorcontrol.NeutralMode;
-//import edu.wpi.first.wpilibj.interfaces.Gyro;
-//import edu.wpi.first.wpilibj.ADXRS450_Gyro;
 import com.kauailabs.navx.frc.AHRS;
 
 import edu.wpi.first.wpilibj.Compressor;
 import edu.wpi.first.wpilibj.DoubleSolenoid;
 import edu.wpi.first.wpilibj.SPI;
-import edu.wpi.first.wpilibj.Solenoid;
 import edu.wpi.first.wpilibj.controller.PIDController;
 import edu.wpi.first.wpilibj.controller.SimpleMotorFeedforward;
 import edu.wpi.first.wpilibj.drive.DifferentialDrive;
@@ -42,13 +38,14 @@ public class DriveTrain extends SubsystemBase {
   public WPI_TalonFX rightSlaveOne = new WPI_TalonFX(11);
   
   //Create the Gyro
-  PigeonIMU gyro = new PigeonIMU(19);
+  //PigeonIMU gyro = new PigeonIMU(19);
   AHRS ahrs = new AHRS(SPI.Port.kMXP);
   //Gyro dumbgyro = new ADXRS450_Gyro(SPI.Port.kOnboardCS0);
   //Create the Drive Train for regular driving
   DifferentialDrive dt = new DifferentialDrive(rightMaster, leftMaster);
 
   public DoubleSolenoid sook = new DoubleSolenoid(0,1);
+  //Solenoid sook = new Solenoid(0,1);
   public Compressor ruuuuuuuum = new Compressor();
   //Initializers for Ramsete
   DifferentialDriveKinematics kinematics = new DifferentialDriveKinematics(Constants.trackWidthMeters);
@@ -66,8 +63,25 @@ public class DriveTrain extends SubsystemBase {
   int _smoothing = 0;
   int _pov = -1;
 
+  boolean m_configCorrectly = true;
+
   public DriveTrain() {
-  
+    configStandardDrive();
+  }
+
+
+
+  @Override
+  public void periodic() {
+    // This method will be called once per scheduler run
+     odometry.update(getHeading(),
+     getLeftDistance(), 
+     getRightDistance());
+    
+     pose = getPose();
+     ramseteDash();
+  }
+  public void configStandardDrive(){
     leftMaster.configFactoryDefault();
     leftSlaveOne.configFactoryDefault();
     rightMaster.configFactoryDefault();
@@ -84,8 +98,6 @@ public class DriveTrain extends SubsystemBase {
     //Set the sensor phase
     leftMaster.setSensorPhase(true);
     rightMaster.setSensorPhase(true);
-
-
 
     //Set inverted
     rightMaster.setInverted(true);
@@ -108,19 +120,6 @@ public class DriveTrain extends SubsystemBase {
     rightMaster.setNeutralMode(NeutralMode.Coast);
     leftSlaveOne.setNeutralMode(NeutralMode.Coast);
     rightSlaveOne.setNeutralMode(NeutralMode.Coast);
-
-
-  }
-  @Override
-  public void periodic() {
-    // This method will be called once per scheduler run
-     odometry.update(getHeading(),
-     getLeftDistance(), 
-     getRightDistance());
-    
-     pose = getPose();
-     ramseteDash();
-
   }
 
   public void compressorON(){
@@ -130,10 +129,10 @@ public class DriveTrain extends SubsystemBase {
     switch (sook.get()){
       case kOff:
         sook.set(DoubleSolenoid.Value.kForward);
-        break;
+       break;
       case kForward:
         sook.set(DoubleSolenoid.Value.kReverse);
-        break;
+       break;
       case kReverse:
         sook.set(DoubleSolenoid.Value.kForward);
         break;
@@ -144,6 +143,7 @@ public class DriveTrain extends SubsystemBase {
 /*-------------------------------------------------------*/
 
 public void arcadeDrive(double speed, double turn){
+  
   dt.arcadeDrive(speed, -turn);
   return;
 }
@@ -153,12 +153,16 @@ public void setMaxOutput(double maxOutput){
   dt.setMaxOutput(maxOutput);
 }
 
+//create the ebrake
 public void ebrake(){
   leftMaster.setNeutralMode(NeutralMode.Brake);
   rightMaster.setNeutralMode(NeutralMode.Brake);
   leftSlaveOne.setNeutralMode(NeutralMode.Brake);
   rightSlaveOne.setNeutralMode(NeutralMode.Brake);
-}public void noebrake(){
+}
+
+//revert the ebrake
+public void noebrake(){
   leftMaster.setNeutralMode(NeutralMode.Coast);
   rightMaster.setNeutralMode(NeutralMode.Coast);
   leftSlaveOne.setNeutralMode(NeutralMode.Coast);
@@ -323,13 +327,31 @@ public void ebrake(){
     rightMaster.setNeutralMode(NeutralMode.Brake);
     leftSlaveOne.setNeutralMode(NeutralMode.Brake);
     rightSlaveOne.setNeutralMode(NeutralMode.Brake);
+
+    //config accel and vcrusie velocity
+    leftMaster.configMotionAcceleration(15000);
+    leftMaster.configMotionCruiseVelocity(6000);
+    rightMaster.configMotionAcceleration(15000);
+    rightMaster.configMotionCruiseVelocity(6000);
+
+    //zero out the things 
+    leftMaster.setSelectedSensorPosition(0, 0, 0);
+    rightMaster.setSelectedSensorPosition(0, 0, 0);
+
+    m_configCorrectly = false;
   }
 
   public void driveMotionMagic(double wheelrot){
+    //conifg the motors to the correct setting 
+    if(m_configCorrectly){
+      config4MotionMagic();
+    }
+    
+    //set the target position
     double targetPosition = Constants.ticksPerRev * wheelrot;
 
+    //set the wheels 
     rightMaster.set(ControlMode.MotionMagic, targetPosition);
     leftMaster.set(ControlMode.MotionMagic, targetPosition);
   }
-
 }

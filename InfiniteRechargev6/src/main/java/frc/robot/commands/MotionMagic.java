@@ -5,51 +5,41 @@
 /* the project.                                                               */
 /*----------------------------------------------------------------------------*/
 
-package frc.robot.commands.shootercommand;
+package frc.robot.commands;
+
+import java.util.function.DoubleSupplier;
 
 import edu.wpi.first.wpilibj2.command.CommandBase;
 
-//import subsystems 
-import frc.robot.subsystems.Limelight;
-import frc.robot.subsystems.Shooter;
+import frc.robot.subsystems.DriveTrain;
 
-public class FlyWheel extends CommandBase {
-  private final Limelight m_limelight;
-  private final Shooter m_shooter;
-  double targetvelocity;
-  /**
-   * Creates a new FlyWheel.
-   */
-  public FlyWheel(Limelight limelight, Shooter shooter) {
-    m_limelight = limelight;
-    m_shooter = shooter;
+public class MotionMagic extends CommandBase {
+  private final DriveTrain drivetrain;
 
-    addRequirements(m_limelight);
-    addRequirements(m_shooter);
+  public MotionMagic( DriveTrain drive) {
+    drivetrain = drive;
+
+    addRequirements(drivetrain);
+    
   }
+
 
   // Called when the command is initially scheduled.
   @Override
   public void initialize() {
+    drivetrain.config4MotionMagic();
   }
 
   // Called every time the scheduler runs while the command is scheduled.
   @Override
   public void execute() {
-
-    //convert the encoder units into velocity 
-    //TODO: change to /4 because of the gear change when that happens 
-    double targetVelocity = (m_limelight.OptimalAngularVelocity() * 4096 / 600)/2; // .../4
-    double testVelocity = (700 * 4096 / 600)/2; // .../4
-    
-    //fire at will 
-    m_shooter.setShootSpeed(testVelocity);
+    drivetrain.driveMotionMagic(7);
   }
 
   // Called once the command ends or is interrupted.
   @Override
   public void end(boolean interrupted) {
-    m_shooter.setPower(0.0);
+    drivetrain.configStandardDrive();
   }
 
   // Returns true when the command should end.

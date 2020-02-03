@@ -168,10 +168,28 @@ public class Shooter extends SubsystemBase {
    * 
    */
 
-  //find the distance the encoders have travled 
-  public double distancePerPulse(){
-    return (Math.PI*Constants.axilDiameter/Constants.cyclesPerRev);
+  public void configHoodClosedLoop(){
+
+    angleMan.configVoltageCompSaturation(12.0,0);
+    angleMan.enableVoltageCompensation(true);
+
+    angleMan.configForwardSoftLimitThreshold(1024);
+    angleMan.configNominalOutputForward(0);
+
+    angleMan.configClosedloopRamp(0.10);
+    
+    //angleMan.configSelectedFeedbackCoefficient(FeedbackDevice.QuadEncoder,0,0);
   }
+
+  //set the hood angle with the position control mode
+  //public void setHoodWithAngleMagic(double angle, double feedforward){
+
+    //m_angle = angle;
+
+    //angleMan.set(ControlMode.Position, m_angle, DemandType.ArbitraryFeedForward, feedforward);
+
+  //}
+  
 
   //find the angle of the encoder
   //public double getencoderAngle(){

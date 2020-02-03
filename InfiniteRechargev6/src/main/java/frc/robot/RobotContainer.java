@@ -7,7 +7,7 @@
 
 package frc.robot;
 
-import java.util.Arrays;
+//import java.util.Arrays;
 import java.util.List;
 
 import edu.wpi.first.wpilibj.GenericHID;
@@ -17,10 +17,10 @@ import edu.wpi.first.wpilibj.XboxController.Button;
 import edu.wpi.first.wpilibj.controller.RamseteController;
 import edu.wpi.first.wpilibj.trajectory.TrajectoryConfig;
 import edu.wpi.first.wpilibj.trajectory.TrajectoryGenerator;
-import edu.wpi.first.wpilibj.trajectory.TrapezoidProfile.Constraints;
-import edu.wpi.first.wpilibj.trajectory.constraint.DifferentialDriveVoltageConstraint;
+//import edu.wpi.first.wpilibj.trajectory.TrapezoidProfile.Constraints;
+//import edu.wpi.first.wpilibj.trajectory.constraint.DifferentialDriveVoltageConstraint;
 import edu.wpi.first.wpilibj.util.Units;
-import edu.wpi.first.wpilibj.trajectory.constraint.DifferentialDriveVoltageConstraint;
+//import edu.wpi.first.wpilibj.trajectory.constraint.DifferentialDriveVoltageConstraint;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.RamseteCommand;
 import edu.wpi.first.wpilibj2.command.button.JoystickButton;
@@ -35,11 +35,12 @@ import frc.robot.commands.LimeDrive;
 import frc.robot.commands.drivetrainShifters;
 import frc.robot.commands.shootercommand.FeedToWheel;
 import frc.robot.commands.shootercommand.FlyWheel;
-import frc.robot.subsystems.Conveyor;
+import frc.robot.commands.MotionMagic;
 //import subsystems 
 import frc.robot.subsystems.DriveTrain;
 import frc.robot.subsystems.Limelight;
 import frc.robot.subsystems.Shooter;
+import frc.robot.subsystems.Conveyor;
 
 //import robot stuff
 import frc.robot.TableElement;
@@ -89,11 +90,16 @@ public class RobotContainer {
     new JoystickButton(driver, Button.kA.value).whenHeld(new LimeDrive(drive, m_limelight));
     new JoystickButton(driver, Button.kBumperLeft.value).toggleWhenPressed(new FlyWheel(m_limelight, m_shooter));
     new JoystickButton(driver, Button.kBumperRight.value)
-      .whenPressed(()-> drive.setMaxOutput(0.5))
+      .whenPressed(()-> drive.setMaxOutput(0.2))
       .whenReleased(()-> drive.setMaxOutput(1));
     new JoystickButton(driver, Button.kStickRight.value).whenPressed(new drivetrainShifters(drive));
-    new JoystickButton(driver, Button.kStickLeft.value).whenPressed(()-> drive.ebrake()).whenReleased(()->drive.noebrake());
+    new JoystickButton(driver, Button.kStickLeft.value)
+      .whenPressed(()-> drive.ebrake())
+      .whenReleased(()->drive.noebrake());
+    //see if the double button press works 
     new JoystickButton(driver, Button.kB.value).toggleWhenPressed(new FeedToWheel(m_conveyor));
+    new JoystickButton(driver, Button.kX.value).whenPressed(new MotionMagic(drive));
+    
     //new JoystickButton(driver, Button..value).whenPressed(()-> drive.compressorON());
  
     
