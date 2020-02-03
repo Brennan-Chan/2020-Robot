@@ -21,14 +21,14 @@ import frc.robot.Constants;
 
 public class Shooter extends SubsystemBase {
   //flywheel motors 
-  public WPI_TalonFX Shooter = new WPI_TalonFX(17);
-  public WPI_TalonFX Shooter2 = new WPI_TalonFX(18);
+  WPI_TalonFX Shooter = new WPI_TalonFX(15);
+  WPI_TalonFX Shooter2 = new WPI_TalonFX(16);
   
   //hood angle adjuster
   public WPI_TalonSRX angleMan = new WPI_TalonSRX(20);
 
   //hood encoders 
-  public Encoder freedomEncoder = new Encoder(0,1); 
+  //public Encoder freedomEncoder = new Encoder(0,1); 
   
   //instanciate doubles 
   private double velo = 0.0;
@@ -47,8 +47,14 @@ public class Shooter extends SubsystemBase {
     Shooter2.follow(Shooter);
   }
  
- 
-  private void configureMotors() {
+  /**
+  * 
+  * MOTOR CONFIGURATIONS 
+  * 
+  */
+
+  //default configurations for the flywheel motors 
+  private void configureMotors(){
     //configure the shooter1
     Shooter.setInverted(false);
     Shooter.configOpenloopRamp(2.0, 0);
@@ -61,6 +67,9 @@ public class Shooter extends SubsystemBase {
     Shooter2.setSensorPhase(true); 
   }
 
+  //configure the motors for the hood angle
+ 
+
   //Configure the motors so that it can use velocity
   public void configClosedLoop(){
     //set the faclons to read the integrated encoders 
@@ -70,6 +79,8 @@ public class Shooter extends SubsystemBase {
     //configure other settings 
     Shooter.configClosedloopRamp(2.0);
     Shooter2.configClosedloopRamp(2.0);
+    Shooter.configAllowableClosedloopError(0, 50);
+    Shooter2.configAllowableClosedloopError(0,50);
 
     //configure the kF to do something PID related...im not really sure what we are doing with our feed forward 
     Shooter.config_kF(0, 1023/12760);
@@ -95,6 +106,12 @@ public class Shooter extends SubsystemBase {
     Shooter2.config_kI(0, .001);
     */
   }
+
+  /**
+   * 
+   *  CALCULATE THE FLYWHEEL VALUES AND SET THE SPEED
+   * 
+   */
 
   //find the shooters velocity
   public int getShooterVelo(){
@@ -131,22 +148,7 @@ public class Shooter extends SubsystemBase {
     configClosedLoop();
     velo = velocity;
     Shooter.set(TalonFXControlMode.Velocity, velo);
-  }
-
-  //find the distance the encoders have travled 
-  public double distancePerPulse(){
-    return (Math.PI*Constants.axilDiameter/Constants.cyclesPerRev);
-  }
-
-  //function to zero out the encoders when going back to neutral 
-  public void resetEncoderValues(){
-    freedomEncoder.reset();
-  }
-
-  //set the shoot angle of the hood 
-  public void setShootAngle(double angle, double feedForward){
-    angle = m_angle;
-    angleMan.set(ControlMode.Position, angle, DemandType.ArbitraryFeedForward, feedForward);
+    Shooter2.set(TalonFXControlMode.Velocity, velo);
   }
 
   public void setPower(double power){
@@ -160,5 +162,20 @@ public class Shooter extends SubsystemBase {
     Shooter2.setNeutralMode(NeutralMode.Coast);
     Shooter2.set(power);
   }
+  /**
+   * 
+   * CALCULATE THE VALUES FOR THE HOODANGLE AND SET THE COMMANDS
+   * 
+   */
 
+  //find the distance the encoders have travled 
+  public double distancePerPulse(){
+    return (Math.PI*Constants.axilDiameter/Constants.cyclesPerRev);
+  }
+
+  //find the angle of the encoder
+  //public double getencoderAngle(){
+    //System.out.println(freedomEncoder.getRaw());
+    //return freedomEncoder.getRaw();
+  //}
 }

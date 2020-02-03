@@ -7,12 +7,19 @@
 
 package frc.robot.subsystems;
 
-import com.ctre.phoenix.motorcontrol.can.WPI_TalonSRX;
+import com.ctre.phoenix.motorcontrol.can.WPI_TalonFX;
 import com.ctre.phoenix.sensors.PigeonIMU;
+import com.ctre.phoenix.motorcontrol.ControlMode;
 import com.ctre.phoenix.motorcontrol.FeedbackDevice;
-import edu.wpi.first.wpilibj.interfaces.Gyro;
-import edu.wpi.first.wpilibj.ADXRS450_Gyro;
+import com.ctre.phoenix.motorcontrol.NeutralMode;
+//import edu.wpi.first.wpilibj.interfaces.Gyro;
+//import edu.wpi.first.wpilibj.ADXRS450_Gyro;
+import com.kauailabs.navx.frc.AHRS;
+
+import edu.wpi.first.wpilibj.Compressor;
+import edu.wpi.first.wpilibj.DoubleSolenoid;
 import edu.wpi.first.wpilibj.SPI;
+import edu.wpi.first.wpilibj.Solenoid;
 import edu.wpi.first.wpilibj.controller.PIDController;
 import edu.wpi.first.wpilibj.controller.SimpleMotorFeedforward;
 import edu.wpi.first.wpilibj.drive.DifferentialDrive;
@@ -28,18 +35,21 @@ import frc.robot.Constants;
 public class DriveTrain extends SubsystemBase {
 
   //Lets create the motorcontrollers
-  WPI_TalonSRX leftMaster = new WPI_TalonSRX(10);
-  WPI_TalonSRX leftSlaveOne = new WPI_TalonSRX(11);
-  WPI_TalonSRX leftSlaveTwo = new WPI_TalonSRX(12);
+  public WPI_TalonFX leftMaster = new WPI_TalonFX(12);
+  public WPI_TalonFX leftSlaveOne = new WPI_TalonFX(13);
 
-  WPI_TalonSRX rightMaster = new WPI_TalonSRX(14);
-  WPI_TalonSRX rightSlaveOne = new WPI_TalonSRX(15);
-  WPI_TalonSRX rightSlaveTwo = new WPI_TalonSRX(17);
+  public WPI_TalonFX rightMaster = new WPI_TalonFX(10);
+  public WPI_TalonFX rightSlaveOne = new WPI_TalonFX(11);
+  
   //Create the Gyro
-  PigeonIMU gyro = new PigeonIMU(rightSlaveTwo);
-  Gyro dumbgyro = new ADXRS450_Gyro(SPI.Port.kOnboardCS0);
+  PigeonIMU gyro = new PigeonIMU(19);
+  AHRS ahrs = new AHRS(SPI.Port.kMXP);
+  //Gyro dumbgyro = new ADXRS450_Gyro(SPI.Port.kOnboardCS0);
   //Create the Drive Train for regular driving
   DifferentialDrive dt = new DifferentialDrive(rightMaster, leftMaster);
+
+  public DoubleSolenoid sook = new DoubleSolenoid(0,1);
+  public Compressor ruuuuuuuum = new Compressor();
   //Initializers for Ramsete
   DifferentialDriveKinematics kinematics = new DifferentialDriveKinematics(Constants.trackWidthMeters);
   DifferentialDriveOdometry odometry = new DifferentialDriveOdometry(getHeading());
@@ -51,17 +61,20 @@ public class DriveTrain extends SubsystemBase {
 
   Pose2d pose;
 
+  //things for motion magic 
+  StringBuilder _sb = new StringBuilder();
+  int _smoothing = 0;
+  int _pov = -1;
 
   public DriveTrain() {
+  
     leftMaster.configFactoryDefault();
     leftSlaveOne.configFactoryDefault();
-    leftSlaveTwo.configFactoryDefault();
     rightMaster.configFactoryDefault();
     rightSlaveOne.configFactoryDefault();
-    rightSlaveTwo.configFactoryDefault();
     //Configures the MagEncoders into Relative mode
-    leftMaster.configSelectedFeedbackSensor(FeedbackDevice.CTRE_MagEncoder_Relative);
-    rightMaster.configSelectedFeedbackSensor(FeedbackDevice.CTRE_MagEncoder_Relative);
+    leftMaster.configSelectedFeedbackSensor(FeedbackDevice.IntegratedSensor);
+    rightMaster.configSelectedFeedbackSensor(FeedbackDevice.IntegratedSensor);
     leftMaster.setSelectedSensorPosition(0);
     rightMaster.setSelectedSensorPosition(0);
 
@@ -75,18 +88,26 @@ public class DriveTrain extends SubsystemBase {
 
 
     //Set inverted
+    rightMaster.setInverted(true);
+    rightSlaveOne.setInverted(true);
+    leftMaster.setInverted(false);
+    leftSlaveOne.setInverted(false);
 
     //This makes the slave controllers follow the output values of the master controllers
     leftSlaveOne.follow(leftMaster);
-    leftSlaveTwo.follow(leftMaster);
     rightSlaveOne.follow(rightMaster);
-    rightSlaveTwo.follow(rightMaster);
 
     //Enables voltage compensation, it will take the battery voltage into account when trying to drive the robot.
     leftMaster.enableVoltageCompensation(false);
     rightMaster.enableVoltageCompensation(false);
     leftMaster.configVoltageCompSaturation(Constants.voltageSaturation);
     rightMaster.configVoltageCompSaturation(Constants.voltageSaturation);
+
+
+    leftMaster.setNeutralMode(NeutralMode.Coast);
+    rightMaster.setNeutralMode(NeutralMode.Coast);
+    leftSlaveOne.setNeutralMode(NeutralMode.Coast);
+    rightSlaveOne.setNeutralMode(NeutralMode.Coast);
 
 
   }
@@ -101,33 +122,68 @@ public class DriveTrain extends SubsystemBase {
      ramseteDash();
 
   }
+
+  public void compressorON(){
+    ruuuuuuuum.setClosedLoopControl(true);
+  }
+  public void shiftPiston(){
+    switch (sook.get()){
+      case kOff:
+        sook.set(DoubleSolenoid.Value.kForward);
+        break;
+      case kForward:
+        sook.set(DoubleSolenoid.Value.kReverse);
+        break;
+      case kReverse:
+        sook.set(DoubleSolenoid.Value.kForward);
+        break;
+    }
+  }
 /*-------------------------------------------------------*/
 /*------------INSERT OTHER BITS OF CODE HERE-------------*/
 /*-------------------------------------------------------*/
 
 public void arcadeDrive(double speed, double turn){
-  dt.arcadeDrive(speed, turn);
+  dt.arcadeDrive(speed, -turn);
   return;
+}
+
+//set the max output which the drive train will be constrained 
+public void setMaxOutput(double maxOutput){
+  dt.setMaxOutput(maxOutput);
+}
+
+public void ebrake(){
+  leftMaster.setNeutralMode(NeutralMode.Brake);
+  rightMaster.setNeutralMode(NeutralMode.Brake);
+  leftSlaveOne.setNeutralMode(NeutralMode.Brake);
+  rightSlaveOne.setNeutralMode(NeutralMode.Brake);
+}public void noebrake(){
+  leftMaster.setNeutralMode(NeutralMode.Coast);
+  rightMaster.setNeutralMode(NeutralMode.Coast);
+  leftSlaveOne.setNeutralMode(NeutralMode.Coast);
+  rightSlaveOne.setNeutralMode(NeutralMode.Coast);
 }
 /*-------------------------------------------------------*/
 /*--------------------RAMSETE STUFF----------------------*/
 /*-------------------------------------------------------*/
-//public double getAngle(){
-  //double[] ypr = new double[3];
-  //gyro.getYawPitchRoll(ypr);
-  //return ypr[0];
-//}
-public double getAngle(){
-  return dumbgyro.getAngle();
-}
-public void resetGyro(){
+
+
+  public void resetGyro(){
   //gyro.setYaw(0);
-  dumbgyro.reset();
-}
+    ahrs.reset();
+  }
+
+
   //Stores the angle of the gyro in radians
   public Rotation2d getHeading(){
-    double heading = getAngle();
-    return Rotation2d.fromDegrees(heading);
+    //double heading = getAngle();
+    return Rotation2d.fromDegrees(ahrs.getAngle());
+  }
+
+  //turn rate of the robot in degrees per second 
+  public double getTurnRate(){
+    return ahrs.getRate()*(true ? -1.0 : 1.0);
   }
 
   //public double getHeading(){
@@ -167,7 +223,8 @@ public void resetGyro(){
   //This is what the controller will use to set the power to all the motors
   public void setOutput(double leftVoltage, double rightVoltage){
     leftMaster.setVoltage(rightVoltage);
-    rightMaster.setVoltage(leftVoltage);
+    //one of the sides is negative 
+    rightMaster.setVoltage(-leftVoltage);
     return;
   }
 
@@ -178,7 +235,7 @@ public void resetGyro(){
   //Resets the Pose when needed
   public void resetOdometry(Pose2d pose){
     resetEncoders();
-    odometry.resetPosition(pose, Rotation2d.fromDegrees(getAngle()));
+    odometry.resetPosition(pose, Rotation2d.fromDegrees(ahrs.getAngle()));
     return;
   }
 
@@ -198,7 +255,7 @@ public void resetGyro(){
   }
 
   public void ramseteDash(){
-    SmartDashboard.putNumber("Robot Angle", getAngle());
+    SmartDashboard.putNumber("Robot Angle", ahrs.getAngle());
     SmartDashboard.putNumber("Left Encoder Distance", getLeftDistance());
     SmartDashboard.putNumber("Right Encoder Distance", getRightDistance());
     SmartDashboard.putNumber("Left Encoder Speed", leftMaster.getSelectedSensorVelocity()*Constants.metersPerPulse*10);
@@ -207,15 +264,72 @@ public void resetGyro(){
 
     SmartDashboard.putNumber("rightMaster Current", rightMaster.getSupplyCurrent());
     SmartDashboard.putNumber("rightSlaveOne Current", rightSlaveOne.getSupplyCurrent());
-    SmartDashboard.putNumber("rightSlaveTwo Current", rightSlaveTwo.getSupplyCurrent());
 
     SmartDashboard.putNumber("Left Master Output", leftMaster.getMotorOutputPercent());
     SmartDashboard.putNumber("Right Master Output", rightMaster.getMotorOutputPercent());
   }
 
+  /**
+   *
+   * MOTION MAGIC CODE (EXPIRAMENTAL)
+   * 
+   */
 
+  public void config4MotionMagic(){
+    //set the motors to factory default 
+    leftMaster.configFactoryDefault();
+    leftSlaveOne.configFactoryDefault();
+    rightMaster.configFactoryDefault();
+    rightSlaveOne.configFactoryDefault();
 
+    //Configures the MagEncoders into Relative mode
+    leftMaster.configSelectedFeedbackSensor(FeedbackDevice.IntegratedSensor);
+    rightMaster.configSelectedFeedbackSensor(FeedbackDevice.IntegratedSensor);
+    leftMaster.setSelectedSensorPosition(0);
+    rightMaster.setSelectedSensorPosition(0);
 
+    //Live life on the edge and turn off safety mode
+    dt.setSafetyEnabled(false);
 
+    //Set the sensor phase
+    leftMaster.setSensorPhase(false);
+    rightMaster.setSensorPhase(false);
+
+    //Set inverted
+    rightMaster.setInverted(true);
+    rightSlaveOne.setInverted(true);
+    leftMaster.setInverted(false);
+    leftSlaveOne.setInverted(false);
+
+    //This makes the slave controllers follow the output values of the master controllers
+    leftSlaveOne.follow(leftMaster);
+    rightSlaveOne.follow(rightMaster);
+
+    //Enables voltage compensation, it will take the battery voltage into account when trying to drive the robot.
+    leftMaster.enableVoltageCompensation(false);
+    rightMaster.enableVoltageCompensation(false);
+    leftMaster.configVoltageCompSaturation(Constants.voltageSaturation);
+    rightMaster.configVoltageCompSaturation(Constants.voltageSaturation);
+
+    //config the outputs 
+    leftMaster.configNominalOutputForward(0, 0);
+    rightMaster.configNominalOutputForward(0, 0);
+
+    leftMaster.configPeakOutputForward(.6, 0);
+    rightMaster.configPeakOutputForward(.6, 0);
+
+    //config the neuteral mode 
+    leftMaster.setNeutralMode(NeutralMode.Brake);
+    rightMaster.setNeutralMode(NeutralMode.Brake);
+    leftSlaveOne.setNeutralMode(NeutralMode.Brake);
+    rightSlaveOne.setNeutralMode(NeutralMode.Brake);
+  }
+
+  public void driveMotionMagic(double wheelrot){
+    double targetPosition = Constants.ticksPerRev * wheelrot;
+
+    rightMaster.set(ControlMode.MotionMagic, targetPosition);
+    leftMaster.set(ControlMode.MotionMagic, targetPosition);
+  }
 
 }

@@ -45,14 +45,14 @@ public final class Constants {
 
 
     //Math Variables for various things
-    public static int ticksPerRev = 4096;
-    public static double pulsesPerMeter = ticksPerRev/(Math.PI*Units.inchesToMeters(wheelSize));
+    public static int ticksPerRev = 2048;
+    public static double pulsesPerMeter = (8.45*ticksPerRev)/(Math.PI*Units.inchesToMeters(wheelSize));
 
-    public static double metersPerPulse = (Math.PI*Units.inchesToMeters(wheelSize))/ticksPerRev;
+    public static double metersPerPulse = (Math.PI*Units.inchesToMeters(wheelSize))/(ticksPerRev*8.45);
 
     public static final double kEncoderDistancePerPulse =
     // Assumes the encoders are directly mounted on the wheel shafts
-    (Units.inchesToMeters(wheelSize) * Math.PI) / (double) ticksPerRev;
+    (Units.inchesToMeters(wheelSize) * Math.PI) / ((double) ticksPerRev*8.45);
 
     //limelight constants 
     public static final double kBallHeight = 0.5; //meters (change to final value when robot gets built )

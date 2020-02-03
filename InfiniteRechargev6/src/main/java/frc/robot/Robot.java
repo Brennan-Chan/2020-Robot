@@ -27,6 +27,10 @@ public class Robot extends TimedRobot {
   private Command m_autonomousCommand;
   //public static SubColorSensor cs = new SubColorSensor();
   private RobotContainer m_robotContainer;
+  public static Limelight lm = new Limelight();
+  public static Shooter st = new Shooter();
+    
+  
 
   /**
    * This function is run when the robot is first started up and should be used for any
@@ -37,11 +41,8 @@ public class Robot extends TimedRobot {
     // Instantiate our RobotContainer.  This will perform all our button bindings, and put our
     // autonomous chooser on the dashboard.
     m_robotContainer = new RobotContainer();
+    //dr.ruuuum.setClosedLoopControl(true);
 
-    //create distance table 
-   // m_robotContainer.tableElementArray[1].distance = 1;
-   // m_robotContainer.tableElementArray[1].angle = 10;
-   // m_robotContainer.tableElementArray[1].velocity = 10;
   }
 
   /**
@@ -58,6 +59,9 @@ public class Robot extends TimedRobot {
     // and running subsystem periodic() methods.  This must be called from the robot's periodic
     // block in order for anything in the Command-based framework to work.
     CommandScheduler.getInstance().run();
+    //lm.distanceToTarget();
+    //System.out.println(st.freedomEncoder.getRaw());
+    
   }
 
   /**
@@ -65,6 +69,7 @@ public class Robot extends TimedRobot {
    */
   @Override
   public void disabledInit() {
+    //dr.ruuuum.setClosedLoopControl(false);
   }
 
   @Override
@@ -99,6 +104,7 @@ public class Robot extends TimedRobot {
     // this line or comment it out.
     if (m_autonomousCommand != null) {
       m_autonomousCommand.cancel();
+      //lm.distanceToTarget();
     }
   }
 

@@ -6,7 +6,6 @@
 /*----------------------------------------------------------------------------*/
 
 package frc.robot.subsystems;
-//import edu.wpi.first.wpilibj.command.subsystem;
 
 import edu.wpi.first.networktables.NetworkTable;
 import edu.wpi.first.networktables.NetworkTableEntry;
@@ -29,17 +28,25 @@ public class Limelight extends SubsystemBase {
   public NetworkTableEntry led = ll.getEntry("ledMode");
   public NetworkTableEntry cameraMode = ll.getEntry("camMode");
 
+  //Create the numbers
   double offsetAngle = getVerticalOffset();
   double BigTarget = LargestTarget();
-  
+  //double tabledistance = arrayDistanceChooser();
 
+  /**
+   * 
+   * LIMELIGHT CONSTANTS AND VARIABLES
+   * 
+   */
+  
+  //Returns x offset angle of the robot from the target
   public double getHorizontalOffset(){
-    //Returns x offset angle of the robot from the target
+    //System.out.println("horizontal offset:" + horizontalOffset.getDouble(0.0));
     return horizontalOffset.getDouble(0.0);
   }
 
+  //Returns y offset angle of the robot from the target
   public double getVerticalOffset(){
-    //Returns y offset angle of the robot from the target
     return verticalOffset.getDouble(0.0);
   }
   
@@ -88,17 +95,44 @@ public class Limelight extends SubsystemBase {
     return targetArea.getDouble(0.0);
   }
 
+  /** 
+   * 
+   *  USE THE ARRAY VALUES 
+   * 
+  */
+
+  //picking the correct distance in the array 
+  //public double arrayDistanceChooser(){
+    //TODO: make it so that it increases every array increase 
+    //if(distanceToTarget() <= Config.karrayDistance[0]){
+      //tabledistance = Config.karrayDistance[0];
+      //return tabledistance;
+    //}
+    //return tabledistance;
+  //}
+
+  /** 
+   * 
+   *  LIMELIGHT AND OTHER EQUATIONS GIVEN BY MIKE AND DANTE
+   * 
+  */
+
+  //calc the distance to the target
   public double distanceToTarget(){
-    System.out.println(Math.tan(Config.mountAngle+offsetAngle)/(Config.hpHeight-Config.cameraHeight));
-    return Math.tan(Config.mountAngle+offsetAngle)/(Config.hpHeight-Config.cameraHeight);
+    double offsetAngle = verticalOffset.getDouble(0);
+    System.out.println("Distance to target:" + (Config.goalHeight-Config.cameraHeight)/Math.tan(Config.mountAngle + ((offsetAngle*2*Math.PI)/360)));
+    return (Config.goalHeight-Config.cameraHeight)/Math.tan(Config.mountAngle + ((offsetAngle*2*Math.PI)/360));
   }
 
+  //calc the Optimal velocity based on distane and Dante's equation
   public double OptimalVelocity(){
     return (Constants.kHorisontalDistance + Constants.kGoalWallDist + distanceToTarget())
     /(Math.sqrt((2/Constants.kGravity)*(Constants.kWallHeight-Constants.kBallHeight-((Math.sin(69)*(Constants.kHorisontalDistance + Constants.kGoalWallDist + distanceToTarget()))/Math.cos(69))))*Math.cos(69));
   }
   
+  //calc the optimal angular velocity(RPM)
   public double OptimalAngularVelocity(){
+    System.out.println("Optimal RPM"+(OptimalVelocity())/(0.0508*Math.PI));
     return (OptimalVelocity())/(0.0508*Math.PI);
   }
 

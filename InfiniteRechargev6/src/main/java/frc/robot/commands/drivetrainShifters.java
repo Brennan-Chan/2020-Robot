@@ -5,27 +5,19 @@
 /* the project.                                                               */
 /*----------------------------------------------------------------------------*/
 
-package frc.robot.commands.shootercommand;
+package frc.robot.commands;
 
 import edu.wpi.first.wpilibj2.command.CommandBase;
 
-//import subsystems 
-import frc.robot.subsystems.Limelight;
-import frc.robot.subsystems.Shooter;
+import frc.robot.subsystems.DriveTrain;
 
-public class FlyWheel extends CommandBase {
-  private final Limelight m_limelight;
-  private final Shooter m_shooter;
-  double targetvelocity;
-  /**
-   * Creates a new FlyWheel.
-   */
-  public FlyWheel(Limelight limelight, Shooter shooter) {
-    m_limelight = limelight;
-    m_shooter = shooter;
 
-    addRequirements(m_limelight);
-    addRequirements(m_shooter);
+public class drivetrainShifters extends CommandBase {
+  private final DriveTrain drivetrain;
+
+  public drivetrainShifters(DriveTrain dt) {
+    drivetrain = dt;
+    addRequirements(drivetrain);
   }
 
   // Called when the command is initially scheduled.
@@ -36,23 +28,17 @@ public class FlyWheel extends CommandBase {
   // Called every time the scheduler runs while the command is scheduled.
   @Override
   public void execute() {
-
-    //convert the encoder units into velocity 
-    double targetVelocity = (m_limelight.OptimalAngularVelocity() * 4096 / 600)/2;
-    
-    //fire at will 
-    m_shooter.setShootSpeed(700);
+    drivetrain.shiftPiston();
   }
 
   // Called once the command ends or is interrupted.
   @Override
   public void end(boolean interrupted) {
-    m_shooter.setPower(0.0);
   }
 
   // Returns true when the command should end.
   @Override
   public boolean isFinished() {
-    return false;
+    return true;
   }
 }

@@ -17,7 +17,10 @@ import edu.wpi.first.wpilibj.XboxController.Button;
 import edu.wpi.first.wpilibj.controller.RamseteController;
 import edu.wpi.first.wpilibj.trajectory.TrajectoryConfig;
 import edu.wpi.first.wpilibj.trajectory.TrajectoryGenerator;
+import edu.wpi.first.wpilibj.trajectory.TrapezoidProfile.Constraints;
+import edu.wpi.first.wpilibj.trajectory.constraint.DifferentialDriveVoltageConstraint;
 import edu.wpi.first.wpilibj.util.Units;
+import edu.wpi.first.wpilibj.trajectory.constraint.DifferentialDriveVoltageConstraint;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.RamseteCommand;
 import edu.wpi.first.wpilibj2.command.button.JoystickButton;
@@ -29,8 +32,10 @@ import edu.wpi.first.wpilibj.trajectory.*;
 //import commands 
 import frc.robot.commands.ArcadeDrive;
 import frc.robot.commands.LimeDrive;
+import frc.robot.commands.drivetrainShifters;
+import frc.robot.commands.shootercommand.FeedToWheel;
 import frc.robot.commands.shootercommand.FlyWheel;
-
+import frc.robot.subsystems.Conveyor;
 //import subsystems 
 import frc.robot.subsystems.DriveTrain;
 import frc.robot.subsystems.Limelight;
@@ -50,6 +55,8 @@ public class RobotContainer {
   private DriveTrain drive = new DriveTrain();
   private Limelight m_limelight = new Limelight();
   private Shooter m_shooter = new Shooter();
+  private Conveyor m_conveyor = new Conveyor();
+
 
   
 
@@ -80,8 +87,20 @@ public class RobotContainer {
    */
   private void configureButtonBindings() {
     new JoystickButton(driver, Button.kA.value).whenHeld(new LimeDrive(drive, m_limelight));
-    new JoystickButton(driver, Button.kBumperLeft.value).whenHeld(new FlyWheel(m_limelight,m_shooter));
+    new JoystickButton(driver, Button.kBumperLeft.value).toggleWhenPressed(new FlyWheel(m_limelight, m_shooter));
+    new JoystickButton(driver, Button.kBumperRight.value)
+      .whenPressed(()-> drive.setMaxOutput(0.5))
+      .whenReleased(()-> drive.setMaxOutput(1));
+    new JoystickButton(driver, Button.kStickRight.value).whenPressed(new drivetrainShifters(drive));
+    new JoystickButton(driver, Button.kStickLeft.value).whenPressed(()-> drive.ebrake()).whenReleased(()->drive.noebrake());
+    new JoystickButton(driver, Button.kB.value).toggleWhenPressed(new FeedToWheel(m_conveyor));
+    //new JoystickButton(driver, Button..value).whenPressed(()-> drive.compressorON());
+ 
+    
+
+    //new JoystickButton(driver, Button.kBumperLeft.value + Button.kBumperLeft.value).whenPressed(new FeedToWheel(m_conveyor));
   }
+    
 
 
   /**
@@ -90,6 +109,12 @@ public class RobotContainer {
    * @return the command to run in autonomous
    */
   public Command getAutonomousCommand() {
+    //create a voltage constraint so we don't accelerate too fast 
+      //var autoVoltageConstraint =
+        //new DifferentialDriveVoltageConstraint(
+          //new SimpleMotorFeedforward(feedforward, kinematics, maxVoltage),
+          //drivekinematics, 11);
+          
     //Create the trajectory config
     drive.resetGyro();
     drive.resetEncoders();
@@ -97,7 +122,6 @@ public class RobotContainer {
       Units.feetToMeters(Constants.autoMaxVelocity),      //Set Max Velocity
       Units.feetToMeters(Constants.autoMaxAcceleration)); //Set Max Acceleration
     //Set Drivetrain kinematics to create optimal paths
- 
 
     //This is a sample trajectory that will move the robot 1 Meter Forward
     config.setKinematics(drive.getKinematics());
