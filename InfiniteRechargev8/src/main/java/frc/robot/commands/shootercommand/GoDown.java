@@ -35,14 +35,14 @@ public class GoDown extends CommandBase {
   @Override
   public void execute() {
 
-    m_shooter.cheetingAngle(1);
+    m_shooter.goDown();
+    //m_shooter.setHoodPower(.8);
   }
 
   // Called once the command ends or is interrupted.
   @Override
   public void end(boolean interrupted) {
     m_shooter.setHoodPower(0);
-    m_shooter.resetHoodEncoder();
   }
 
   // Returns true when the command should end.
@@ -56,7 +56,8 @@ public class GoDown extends CommandBase {
       return hood_isFinished;
     }
     */
-    if((m_shooter.getencoderAngle() <= 1) || m_shooter.activeLimitSwitch()) {
+    
+    if( (m_shooter.getencoderAngle() <= 2)) {
       hood_isFinished = true;
       System.out.println("Hood is finished");
       return hood_isFinished;

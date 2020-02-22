@@ -14,10 +14,9 @@ import frc.robot.subsystems.Conveyor;
 
 public class ReverseIntake extends CommandBase {
   private final Conveyor Conveyor;
-  double time;
-  double endTime;
+ 
 
-  public ReverseIntake(Conveyor m_Conveyor, double time) {
+  public ReverseIntake(Conveyor m_Conveyor) {
     Conveyor = m_Conveyor;
     addRequirements(m_Conveyor);
 
@@ -25,8 +24,7 @@ public class ReverseIntake extends CommandBase {
 
   @Override
   public void initialize() {
-    long startTime = System.currentTimeMillis();
-    endTime = startTime + time;
+    
   }
 
   @Override
@@ -41,10 +39,6 @@ public class ReverseIntake extends CommandBase {
 
   @Override
   public boolean isFinished() {
-    if (System.currentTimeMillis() >= endTime){
-      System.out.println("The time has ended");
-      return false;
-    }
     return false;
   }
 }

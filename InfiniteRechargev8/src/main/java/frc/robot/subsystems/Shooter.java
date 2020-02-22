@@ -8,14 +8,13 @@
 package frc.robot.subsystems;
 
 import com.ctre.phoenix.motorcontrol.ControlMode;
-import com.ctre.phoenix.motorcontrol.ControlMode;
 import com.ctre.phoenix.motorcontrol.FeedbackDevice;
 import com.ctre.phoenix.motorcontrol.NeutralMode;
 import com.ctre.phoenix.motorcontrol.TalonFXControlMode;
 import com.ctre.phoenix.motorcontrol.can.*;
 
+import edu.wpi.first.wpilibj.Counter;
 import edu.wpi.first.wpilibj.DigitalInput;
-import edu.wpi.first.wpilibj.DigitalOutput;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants;
@@ -36,7 +35,8 @@ public class Shooter extends SubsystemBase {
   private Limelight m_limelight = new Limelight();
 
   //create limit switch 
-  public static DigitalInput limitSwitch1 = new DigitalInput(1);
+  DigitalInput Alimit;
+  private static DigitalInput limitSwitch1 = new DigitalInput(1);
 
   public Shooter(){
     //reset the motors
@@ -50,6 +50,7 @@ public class Shooter extends SubsystemBase {
     
     //create the followers
     Shooter2.follow(Shooter);
+   
   }
  
   /**
@@ -62,13 +63,11 @@ public class Shooter extends SubsystemBase {
   public void configureMotors(){
     //configure the shooter1
     Shooter.setInverted(false);
-    Shooter.configOpenloopRamp(2.0, 0);
     Shooter.configSelectedFeedbackSensor(FeedbackDevice.IntegratedSensor, 0,0);
     Shooter.setSensorPhase(true); 
     
     
     Shooter2.setInverted(true);
-    Shooter2.configOpenloopRamp(2.0, 0);
     Shooter2.configSelectedFeedbackSensor(FeedbackDevice.IntegratedSensor, 0,0);
     Shooter2.setSensorPhase(true); 
 
@@ -86,22 +85,22 @@ public class Shooter extends SubsystemBase {
     Shooter2.configSelectedFeedbackSensor(FeedbackDevice.IntegratedSensor, 0, 0);
 
     //configure other settings 
-    Shooter.configClosedloopRamp(0.2);
-    Shooter2.configClosedloopRamp(0.2);
+    Shooter.configClosedloopRamp(.5);
+    Shooter2.configClosedloopRamp(.5);
     Shooter.configAllowableClosedloopError(0, 0);
     Shooter2.configAllowableClosedloopError(0, 0);
 
     //About: Create a horzontal asymatote for the velocity to reach by configuring the PID & F values 
     //TIP: change the PID loop back to zero if things start to fail 
-    //Shooter.config_kF(0, getShooterkF(5642*((2048*60)/(600*16)))); 
-    Shooter.config_kF(0, getShooterkF(m_limelight.setShooterVelocity()*((2048*60)/(600*16)))); 
-    Shooter.config_kP(0, 0.002); 
+    Shooter.config_kF(0, getShooterkF(m_limelight.setShooterVelocity() * Constants.HoodAngleConstants.cRPMtoTicks)); 
+    //Shooter.config_kF(0, getShooterkF(m_limelight.setShooterVelocity()* Constants.HoodAngleConstants.kRPMtoTicks)); 
+    Shooter.config_kP(0, 0.002); //.002
     Shooter.config_kD(0, 0);
     Shooter.config_kI(0, 0);
 
-    //Shooter2.config_kF(0, getShooterkF(5642*((2048*60)/(600*16))));
-    Shooter2.config_kF(0, getShooterkF(m_limelight.setShooterVelocity()*((2048*60)/(600*16))));
-    Shooter2.config_kP(0, 0.002);
+    Shooter2.config_kF(0, getShooterkF(m_limelight.setShooterVelocity()* Constants.HoodAngleConstants.cRPMtoTicks)); 
+    //Shooter2.config_kF(0, getShooterkF(m_limelight.setShooterVelocity()*Constants.HoodAngleConstants.kRPMtoTicks));
+    Shooter2.config_kP(0, 0.002); //.002
     Shooter2.config_kD(0, 0);
     Shooter2.config_kI(0, 0);
   }
@@ -132,8 +131,8 @@ public class Shooter extends SubsystemBase {
     return Shooter2.getSelectedSensorVelocity(0);
   }
 
-  public int getTheoShooterVelo(){
-    return (Shooter.getSelectedSensorVelocity(0)*4096/600)/2;
+  public double getTheoShooterVelo(){
+    return (Shooter.getSelectedSensorVelocity(0)*Constants.HoodAngleConstants.kTickstoRPM);
   }
 
   //get the motor current output percent 
@@ -312,11 +311,13 @@ public class Shooter extends SubsystemBase {
   //Creates its own kinda position mode and makes it hit a certian position 
   public void cheetingAngle(double hoodAngle){
 
+    double kF = 1 -((getencoderAngle()/ hoodAngle) - .2);
+    //double dF = 1 - ((hoodAngle / getencoderAngle()) + .1);
     if((getencoderAngle() <= hoodAngle)){
     
-      while(getencoderAngle() < hoodAngle - .1){
+      while(getencoderAngle() < hoodAngle){
 
-        angleMan.set(-0.8);  
+        angleMan.set(-kF);  
       }
       if(getencoderAngle() >= hoodAngle){
         
@@ -325,9 +326,9 @@ public class Shooter extends SubsystemBase {
     }
     else if((getencoderAngle() >= hoodAngle)){
 
-      while(getencoderAngle() > hoodAngle + .1){
+      while(getencoderAngle() > hoodAngle){
 
-        angleMan.set(0.8);         
+        angleMan.set(.4);         
       }
       if(getencoderAngle() <= hoodAngle){
 
@@ -336,12 +337,22 @@ public class Shooter extends SubsystemBase {
     }
   }
 
+  public void goDown(){
+    while(!limitSwitch1.get()){
+      angleMan.set(ControlMode.PercentOutput, 1);
+    } 
+    if(limitSwitch1.get()){
+      angleMan.set(ControlMode.PercentOutput, 0.0);
+      resetHoodEncoder();
+    }
+  }
+
 
 
   //find the angle of the encoder
   public double getencoderAngle(){
     //find the encoder angle based on degrees 
-    return angleMan.getSelectedSensorPosition(0)* 0.0878906;
+    return -angleMan.getSelectedSensorPosition(0)* 0.0878906;
   }
 
   //returns the angle in raw encoder ticks 
@@ -356,17 +367,9 @@ public class Shooter extends SubsystemBase {
 
   //see if the limit switch is active 
   public boolean activeLimitSwitch(){
-    boolean m_limitActive;
-    
-    m_limitActive = false;
-    while (limitSwitch1.get() == false){
-      m_limitActive = true;
-    }
-    while (limitSwitch1.get() == true){
-      m_limitActive = false;
-    }
-    return m_limitActive;
+    return limitSwitch1.get();
   }
+
 
   //table to set the hood angle cause arrays are hard with frc
   public double hoodAngleTable(){
@@ -382,13 +385,13 @@ public class Shooter extends SubsystemBase {
       setAngle = 41;
     }
     else if ((m_limelight.distanceToTarget() >= 4.5 ) && (m_limelight.distanceToTarget() < 7.5 )){
-      setAngle = 61;
+      setAngle = 50;
     }
     else if ((m_limelight.distanceToTarget() >= 7.5 ) && (m_limelight.distanceToTarget() < 9.5 )){
       setAngle = 45;
     }
     else if ((m_limelight.distanceToTarget() >= 9.5 ) && (m_limelight.distanceToTarget() < 11.5 )){
-      setAngle = 45;
+      setAngle = 47.5;
     }
     else if ((m_limelight.distanceToTarget() >= 11.5 ) && (m_limelight.distanceToTarget() < 13.5 )){
       setAngle = 42;
@@ -397,25 +400,25 @@ public class Shooter extends SubsystemBase {
       setAngle = 32.5; //tech 28.5
     }
     else if ((m_limelight.distanceToTarget() >= 14.5 ) && (m_limelight.distanceToTarget() < 15.5 )){
-      setAngle = 60;
+      setAngle = 57;
     }
     else if ((m_limelight.distanceToTarget() >= 15.5 ) && (m_limelight.distanceToTarget() < 17.5 )){
       setAngle = 56; //tech 22.5
     }
     else if ((m_limelight.distanceToTarget() >= 17.5 ) && (m_limelight.distanceToTarget() < 20 )){
-      setAngle = 59;
+      setAngle = 58;
     }
     else if ((m_limelight.distanceToTarget() >= 20 ) && (m_limelight.distanceToTarget() < 23 )){
-      setAngle = 44;
+      setAngle = 58;
     }
     else if ((m_limelight.distanceToTarget() >= 23 ) && (m_limelight.distanceToTarget() < 26 )){
-      setAngle = 68;
+      setAngle = 48;
     }
     else if ((m_limelight.distanceToTarget() >= 26 ) && (m_limelight.distanceToTarget() < 29 )){
-      setAngle = 60;
+      setAngle = 48;
     }
     else if ((m_limelight.distanceToTarget() >= 29 ) && (m_limelight.distanceToTarget() < 30)){
-      setAngle = 60;
+      setAngle = 48;
     }
     //System.out.println("Set Shooter velocity" + setAngle);
     
@@ -426,6 +429,8 @@ public class Shooter extends SubsystemBase {
   public void periodic() {
     //About: Display all of the values you want to monitor 
     SmartDashboard.putNumber("Shooter Velocity", getTheoShooterVelo());
+    SmartDashboard.putNumber("Shooter1 Velo", getShooterVelo());
+    SmartDashboard.putNumber("Shooter2 Velo", getShooter2Velo());
     SmartDashboard.putNumber("Theoretical Hood Angle", getencoderAngle());
     SmartDashboard.putNumber("Encoder tick Hood Angle:", actualEncoderAngle());
     SmartDashboard.putNumber("Predicted Angle", hoodAngleTable());

@@ -375,14 +375,14 @@ public void noebrake(){
 
     //set the PID values for the master motor controllers 
     //TODO: config the kP values and the kF values to ensure the proper drive 
-    rightMaster.config_kP(0, 0.2);
+    rightMaster.config_kP(0, .78);
     rightMaster.config_kI(0, 0);
     rightMaster.config_kD(0, 0);
     rightMaster.config_kF(0, 0.6);
     
 
     //TODO: config the kP values and the kF values to ensure the proper drive 
-    leftMaster.config_kP(0, 0.2);
+    leftMaster.config_kP(0, 0.78);
     rightMaster.config_kI(0, 0);
     leftMaster.config_kD(0, 0);
     leftMaster.config_kF(0, 0.6);
@@ -410,8 +410,6 @@ public void noebrake(){
     leftMaster.set(TalonFXControlMode.MotionMagic, targetPosition2);
         
   }
-
-  
   /**
    *
    * ELEVATOR CODE (EXPIRAMENTAL)

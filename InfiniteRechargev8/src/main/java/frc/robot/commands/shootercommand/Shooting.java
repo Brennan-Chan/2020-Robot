@@ -15,9 +15,11 @@ import frc.robot.subsystems.Shooter;
 public class Shooting extends CommandBase {
   private final Limelight m_limelight;
   private final Shooter m_shooter;
+  double time;
+  double endTime;
   
 
-  public Shooting(Limelight limelight, Shooter shooter) {
+  public Shooting(Limelight limelight, Shooter shooter, double time) {
     m_limelight = limelight;
     m_shooter = shooter;
     
@@ -26,6 +28,10 @@ public class Shooting extends CommandBase {
   }
   @Override
   public void initialize() {
+    //start the timer 
+    long startTime = System.currentTimeMillis();
+    endTime = startTime + time;
+
     m_shooter.configHoodClosedLoop();
     m_shooter.resetHoodEncoder();
     m_shooter.configClosedLoop();
@@ -35,7 +41,7 @@ public class Shooting extends CommandBase {
   @Override
   public void execute() {
     //convert the encoder units into velocity 
-    double convertedVelocity = m_limelight.setShooterVelocity() *(60/16); 
+    double convertedVelocity = m_limelight.setShooterVelocity() * (60/16); 
 
     //aim 
     m_shooter.cheetingAngle(m_shooter.hoodAngleTable());
@@ -58,7 +64,9 @@ public class Shooting extends CommandBase {
   // Returns true when the command should end.
   @Override
   public boolean isFinished() {
-    if(!m_limelight.validTarget()){
+    
+    if (System.currentTimeMillis() >= endTime){
+      System.out.println("The time has ended");
       return true;
     }
     else{

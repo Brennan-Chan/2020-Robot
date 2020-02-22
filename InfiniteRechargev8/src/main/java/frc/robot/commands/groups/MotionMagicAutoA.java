@@ -12,23 +12,22 @@ import frc.robot.subsystems.*;
 
 //import commands 
 import frc.robot.commands.drivingCommands.MotionMagic;
+import frc.robot.commands.shootercommand.Shooting;
 // NOTE:  Consider using this command inline, rather than writing a subclass.  For more
 // information, see:
 // https://docs.wpilib.org/en/latest/docs/software/commandbased/convenience-features.html
 public class MotionMagicAutoA extends SequentialCommandGroup {
-  /**
-   * Creates a new MotionMagicAutoA.
-   */
+
   public MotionMagicAutoA(DriveTrain drive, Limelight lime, Shooter shoot, BallFeeder feed) {
-    
-    //TODO: see if the addCommand feature works instead of super 
+  
     super(
     //new MotionMagic(1.3, -1.3, drive),// 90 degree turn 
-    new MotionMagic(-11.0, -11.0, drive),
-    new MotionMagic(-.65, .65, drive),
-    new MotionMagic(3.9, 3.9, drive),
-    new MotionMagic(.65, -.65, drive),
-    new MotionMagic(5.0, 5.0, drive)
+    new MotionMagic(-10.0, -10.0, drive),
+    new MotionMagic(2.3, 2.3, drive),
+    new Shooting(lime, shoot, 5000),
+    new MotionMagic(-5.0, -5.0, drive),
+    new MotionMagic(5.0, 5.0, drive),
+    new Shooting(lime, shoot, 5000)
     );
   }
 }

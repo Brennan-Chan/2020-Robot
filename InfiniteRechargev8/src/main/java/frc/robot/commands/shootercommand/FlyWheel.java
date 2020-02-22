@@ -18,7 +18,6 @@ import frc.robot.subsystems.Shooter;
 public class FlyWheel extends CommandBase {
   private final Limelight m_limelight;
   private final Shooter m_shooter;
-  private double balls;
 
   /**
    * Creates a new FlyWheel.
@@ -35,7 +34,6 @@ public class FlyWheel extends CommandBase {
   @Override
   public void initialize() {
     m_shooter.configClosedLoop();
-    balls = 0;
   }
 
   // Called every time the scheduler runs while the command is scheduled.
@@ -43,13 +41,13 @@ public class FlyWheel extends CommandBase {
   public void execute() {
 
     //convert the encoder units into velocity 
-    double convertedVelocity = m_limelight.setShooterVelocity() *(60/16); 
+    double convertedVelocity = m_limelight.setShooterVelocity(); //*(60/16)
+
 
     //fire at will 
     m_shooter.setShootSpeed(convertedVelocity);
 
     if(!(convertedVelocity == m_shooter.getTheoShooterVelo())){
-      ++balls;
     }
   }
 

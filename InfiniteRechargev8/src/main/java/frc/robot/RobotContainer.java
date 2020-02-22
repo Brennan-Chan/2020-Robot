@@ -40,7 +40,7 @@ import frc.robot.commands.shootercommand.GoDown;
 import frc.robot.commands.shootercommand.ReverseIntake;
 import frc.robot.commands.shootercommand.hoodPositionAlign;
 import frc.robot.commands.shootercommand.shooterAlign;
-import frc.robot.commands.drivingCommands.MotionMagic;
+import frc.robot.commands.groups.Auto_A;
 import frc.robot.commands.groups.MotionMagicAutoA;
 //import subsystems 
 import frc.robot.subsystems.DriveTrain;
@@ -83,17 +83,9 @@ public class RobotContainer {
       ()-> driver.getY(Hand.kLeft),
       ()-> driver.getX(Hand.kRight),
       drive
-    ));
-   
-    
+    ));    
   }
 
-  /**
-   * Use this method to define your button->command mappings.  Buttons can be created by
-   * instantiating a {@link GenericHID} or one of its subclasses ({@link
-   * edu.wpi.first.wpilibj.Joystick} or {@link XboxController}), and then passing it to a
-   * {@link edu.wpi.first.wpilibj2.command.button.JoystickButton}.
-   */
   private void configureButtonBindings() {
 
     new JoystickButton(driver, Button.kA.value).whenHeld(new LimeDrive(drive, m_limelight));
@@ -106,7 +98,7 @@ public class RobotContainer {
       .whenReleased(()-> drive.noebrake()); 
     new JoystickButton(driver, Button.kB.value).toggleWhenPressed(new FeedToWheel(m_conveyor));
     new JoystickButton(driver, Button.kBumperLeft.value).and(new JoystickButton (driver, Button.kB.value))
-      .whenActive(new ReverseIntake(m_conveyor, 1000));
+      .whenActive(new ReverseIntake(m_conveyor));
     new JoystickButton(driver, Button.kX.value).whenPressed(new Align2(m_limelight, m_shooter));
     //new JoystickButton(driver, Button.kX.value).whenPressed(new hoodPositionAlign(m_limelight, m_shooter));
     new JoystickButton(driver, Button.kY.value).whenPressed(new GoDown(m_limelight, m_shooter));
@@ -169,5 +161,6 @@ public class RobotContainer {
     );
     //return pathFollower
     return new MotionMagicAutoA(drive, m_limelight, m_shooter, m_feeder);
+    //return new Auto_A(m_feeder, m_limelight, drive, m_shooter);
   }
 }

@@ -141,7 +141,7 @@ public class Limelight extends SubsystemBase {
       setVelocity = (4012.73/2);
     }
     else if ((distanceToTarget() >= 9.5) &&( distanceToTarget() < 11.5)){
-      setVelocity = (2400.00);
+      setVelocity = (3574.40);
     }
     else if ((distanceToTarget() >= 11.5) &&( distanceToTarget() < 13.5)){
       setVelocity = 4643.31/2;
@@ -150,7 +150,7 @@ public class Limelight extends SubsystemBase {
       setVelocity = 4929.93/2;
     }
     else if ((distanceToTarget() >= 14.5) &&( distanceToTarget() < 15.5)){
-      setVelocity = 5044.58/2;
+      setVelocity = 4303.30;
     }
     else if ((distanceToTarget() >= 15.5) &&( distanceToTarget() < 17.5)){
       setVelocity = 6305.73/2;
@@ -159,10 +159,10 @@ public class Limelight extends SubsystemBase {
       setVelocity = 6191.08/2;
     }
     else if ((distanceToTarget() >= 20.0) &&( distanceToTarget() < 23.0)){
-      setVelocity = 6191.08/2;
+      setVelocity = 5300;
     }
     else if ((distanceToTarget() >= 23.0) &&( distanceToTarget() < 26.0)){
-      setVelocity = 6191.08/2;
+      setVelocity = 5300;
     }
     else if ((distanceToTarget() >= 26.0) &&( distanceToTarget() < 29.0)){
       setVelocity = 6191.08/2;

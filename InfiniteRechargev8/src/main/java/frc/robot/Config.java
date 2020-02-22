@@ -5,7 +5,7 @@ public class Config {
 
     //Limelight Variables 
     public static final double Kp = 0.007;
-    public static final double mountAngle = .406706; //26.3258
+    public static final double mountAngle = .302706; 
 
     public static final double cameraHeight = 2.583; //Camera height in meters
     public static final double goalHeight = 7.5; //Hatch panel height in meters

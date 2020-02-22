@@ -79,6 +79,10 @@ public final class Constants {
         public static final double ticksPerRev = 4096;
         public static final double axilDiameter = 1;
         public static final double kGearRatio = (16/60);
+        public static final double cGearRatio = (1 /1.5);
+        public static final double kRPMtoTicks = (2048*60)/(600*16);
+        public static final double cRPMtoTicks = (1023*1)/(600*1.5);
+        public static final double kTickstoRPM = (600*1)/(2048*1.5);
 
         public static final double kHoodAnlgeperPulse = ((Math.PI*axilDiameter)/ticksPerRev);
     }
